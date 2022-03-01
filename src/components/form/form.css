@@ -48,4 +48,6 @@
 .form-message {
     font-size: 16px;
     font-weight: 700;
+    max-width: 240px;
+    padding-top: 20px;
 }

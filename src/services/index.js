@@ -1,17 +1,27 @@
-export function fetchAllUsers() {
+import urlServices from '../commons/'
+
+const {
+    CREATE_URL,
+    DELETE_URL,
+    GET_ALL_URL,
+    GET_USER_URL,
+    UPDATE_URL
+} = urlServices;
+
+export function getAll() {
     return new Promise((resolve, reject) => {
-        fetch('http://dummy.restapiexample.com/public/api/v1/employees', {
+        fetch(GET_ALL_URL, {
             method: 'GET'
         })
         .then(response => response.json())
         .then(users => resolve(users))
         .catch(error => reject(error))
-    }) 
+    })
 }
 
 export function createUser(data) {
     return new Promise((resolve, reject) => {
-        fetch('http://dummy.restapiexample.com/api/v1/create', {
+        fetch(CREATE_URL, {
             method: 'POST',
             body: JSON.stringify(data)
         })
@@ -22,7 +32,7 @@ export function createUser(data) {
 
 export function updateUser(data) {
     return new Promise((resolve, reject) => {
-        fetch(`http://dummy.restapiexample.com/api/v1/update/${data.id}`, {
+        fetch(`${UPDATE_URL}${data.id}`, {
             method: 'PUT',
             body: JSON.stringify(data)
         })
@@ -33,7 +43,7 @@ export function updateUser(data) {
 
 export function deleteUser(id) {
     return new Promise((resolve, reject) => {
-        fetch(`http://dummy.restapiexample.com/api/v1/delete/${id}`, {
+        fetch(`${DELETE_URL}${id}`, {
             method: 'DELETE'
         })
         .then(response => resolve(response.json()))
@@ -43,7 +53,7 @@ export function deleteUser(id) {
 
 export function getUser(id) {
     return new Promise((resolve, reject) => {
-        fetch(`http://dummy.restapiexample.com/api/v1/employee/${id}`, {
+        fetch(`${GET_USER_URL}${id}`, {
             method: 'GET'
         })
         .then(response => resolve(response.json()))

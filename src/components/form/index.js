@@ -1,19 +1,20 @@
-import { createUser, updateUser } from '../../services'
-import { useEffect, useState } from "react"
-import { useSearchParams } from "react-router-dom"
-import PropTypes from 'prop-types'
-import './form.css'
+import { createUser, updateUser } from '../../services';
+import { useContext, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import PropTypes from 'prop-types';
+import './form.css';
+import { UserContext } from '../../context/context';
 
 function Form(props) {
-    const [inputs, setInputs] = useState({})
-    const [message, setMessage] = useState([])
-    const [searchParams, setSearchParams] = useSearchParams([])
-
+    const { action } = props;
+    const [inputs, setInputs] = useState({});
+    const [message, setMessage] = useState([]);
+    const [searchParams, setSearchParams] = useSearchParams([]);
+    const {users, setUsers} = useContext(UserContext);
+    
     useEffect(() => {
-        const { action } = props
-
         if(action === 'editar') {
-            const inputData = {
+            let inputData = {
                 id: searchParams.get('id'),
                 username: searchParams.get('username'),
                 age: searchParams.get('age'),
@@ -21,7 +22,7 @@ function Form(props) {
             }
             for(let key in inputData) setInputs(values => ({...values, [key]: inputData[key]}))
         }
-    },[]);
+    }, []);
 
     const handleChange = e => {
         const { name, value } = e.target
@@ -30,41 +31,42 @@ function Form(props) {
     
     const handleSubmit = e => {
         e.preventDefault()
-        const { action } = props
+        const { age, id, salary, username } = inputs
 
+        let dataToSend = {
+            employee_name: username,
+            employee_age: Number(age),
+            employee_salary: Number(salary),
+            profile_image: '-'
+        }
+        
         switch(action) {
             case 'crear':
-                console.log('handleSubmit CREAR --> ')
-                createUser({
-                    employee_name: inputs.username,
-                    employee_age: inputs.age,
-                    employee_salary: inputs.salary  
-                }).then(response => {  if(response.status === 'success') setMessage(response.message)
-                },error => setMessage(error.message))
+                createUser(dataToSend).then(response => {  
+                    if(response.status === 'success') {
+                        setUsers([...users, {...dataToSend, id: response.data.id}])
+                        setMessage(response.message)
+                    } 
+                },error => setMessage('No ha sido posible crear el registro, intente otra vez'))
             break
 
             case 'editar':
-                console.log('handleSubmit EDITAR --> ', inputs)
-                updateUser({
-                    id: inputs.id,
-                    employee_name: inputs.name,
-                    employee_age: inputs.age,
-                    employee_salary: inputs.salary  
-                })
-                .then(response => {
-                console.log('Response --> ',response, response.status, response.message)
-                    if(response.status) {
+                const idNumber = Number(id);
+                dataToSend = {...dataToSend, id:idNumber};
+                updateUser(dataToSend).then(response => {
+                    if(response.status === 'success') {
+                        setUsers(users.map(user => (user.id === dataToSend.id ? dataToSend : user)))
                         setMessage(response.message)
-                        // TODO Guarda registro en el Hook de contexto
                     }
-                },error => setMessage(error.message))
+                },error => setMessage('No ha sido posible actualizar el registro, intente otra vez'))
             break
         }
-
     }
 
     return (
-        <div className='form-wrapper'>
+        <div>
+        <h5>{`${action} empleado`}</h5>
+        <div className='form-wrapper'>    
         <form className='form' onSubmit={ handleSubmit }>
             <div className='input-group'>
               <label className='label' >Name</label>
@@ -103,6 +105,7 @@ function Form(props) {
             <p className='form-message'>{ message }</p>
         </form>
         </div>
+        </div>
     )
 }
 
@@ -110,4 +113,4 @@ Form.propTypes = {
     action: PropTypes.string
 }
 
-export default Form
+export default Form;

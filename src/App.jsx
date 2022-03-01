@@ -1,24 +1,30 @@
 import './App.css';
+import List from './components/list';
 import { useContext, useEffect, useState } from "react";
-import List from './components/list'
-import { deleteUser, fetchAllUsers} from './services'
+import { deleteUser, getAll} from './services'
+import { StateContext, UserContext } from './context/context';
 
 function App() {
   const [done, setDone] = useState(false)
   const [items, setItems] = useState([])
   const [message, setMessage] = useState('')
+  const {users, setUsers} = useContext(UserContext)
+  const {alreadyLoaded, setLoaded} = useContext(StateContext)
 
   useEffect(() => {
-    fetchAllUsers()
-    .then(users => {
-      console.log('Data --> ',users.data)
-      setItems(users.data)
-      setDone(true)
-    },error => setMessage(error.message))
-  },[]);
+    if(!alreadyLoaded) {
+      getAll()
+      .then(items => {
+        setItems(items.data)
+        setDone(true)
+        setUsers(items.data)
+        setLoaded(true)
+      },error => setMessage('No ha sido posible presentar los datos, intente otra vez'))
+    }
+  }, []);
 
   const handleEditar = e => {
-    console.log('HandlerEditar --> ')
+    console.log('HandlerEditar --> ');
   }
 
   const handleEliminar = e => {
@@ -26,23 +32,24 @@ function App() {
 
     deleteUser(value)
     .then(response => {
-      //console.log('Response --> ',response, response.status, response.message)
-      if(response.status) {
+      if(response.status === 'success') {
+        setUsers(users.filter(user => user.id !== Number(value)))
         setMessage(response.message)
       }
-    },error => setMessage(error.message))
+    },error => setMessage('No ha sido posible eliminar el registro, intente otra vez'))
   }
 
   return (
       <div className='App'>
         <div className='titulo'>
            <h3>Lista de empleados</h3>
+           <p className='message'>{ message }</p>
         </div>
         <div className='lista'>
-        {done && items ?
+        {(done || alreadyLoaded) && (items || users) ?
         (
-        <List 
-          data={items} 
+        <List
+          data={alreadyLoaded ? users : items} 
           handleEditar={ handleEditar }
           handleEliminar={ handleEliminar }
         />
@@ -50,7 +57,6 @@ function App() {
           <p>Cargando resultados...</p>
         )}
         </div>
-        <p>{ message }</p>
       </div>
     )
 }

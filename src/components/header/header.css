@@ -1,0 +1,27 @@
+.header {
+    display: flex;
+    flex-direction: column;
+    padding-top: 50px;
+}
+
+.title {
+    display: flex;
+    font-size: 32px;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    flex-direction: row;
+    justify-content: space-around;
+    margin-bottom: 16px;
+}
+
+.description {
+    display: initial;
+    font-size: 16px;
+    margin: 0 auto;
+}
+
+.botones {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
